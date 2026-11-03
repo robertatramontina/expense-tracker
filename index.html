@@ -1,0 +1,182 @@
+
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Despesas Pessoais</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/config.js"></script>
+    <script src="js/script.js" defer></script>
+</head>
+<body class="light">
+
+    <header>
+        <div class="header-content">
+            <h1>Gestor de Despesas</h1>
+            <button id="btnTema"  type="button">Modo escuro</button>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- LOGIN -->
+        <section id="secaoLogin" class="card">
+            <h2>Iniciar sessão</h2>
+
+            <form id="formLogin">
+                <label for="nomeUsuario">Nome de utilizador</label>
+                <input type="text" id="nomeUsuario"
+                       name="nomeUsuario"
+                       placeholder="Introduza o seu nome"
+                       required>
+
+                <label for="senha">Palavra-passe</label>
+                <input type="password" id="senha"
+                       name="senha"
+                       placeholder="Introduza a palavra-passe"
+                       required>
+
+                <button type="submit">Entrar</button>
+            </form>
+        </section>
+
+        <!-- APLICAÇÃO -->
+        <div id="areaApp" class="hidden">
+
+            <section class="card welcome">
+                <div>
+                    <h2 id="saudacao">Olá, utilizador!</h2>
+                    <p id="dataHora">Data e hora atual</p>
+                </div>
+
+                <button id="btnSair" type="button"
+                        class="btn-secondary">Sair</button>
+            </section>
+
+            <!-- RESUMO -->
+            <section class="card resumo">
+                <h2>Resumo das despesas</h2>
+                <p>Total gasto</p>
+                <h3 id="totalDespesas">0,00 €</h3>
+            </section>
+
+            <!-- FORMULÁRIO DE DESPESAS -->
+            <section class="card">
+                <h2>Registar despesa</h2>
+
+                <form id="formDespesa">
+
+                    <label for="descricao">Descrição</label>
+                    <input type="text" id="descricao"
+                           name="descricao"
+                           placeholder="Ex.: Supermercado"
+                           required>
+
+                    <label for="valor">Valor (€)</label>
+                    <input type="number" id="valor"
+                           name="valor"
+                           min="0.01" step="0.01"
+                           placeholder="0.00"
+                           required>
+
+                    <label for="categoria">Categoria</label>
+                    <select id="categoria" name="categoria" required>
+                        <option value="">Selecione uma categoria</option>
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Transportes">Transportes</option>
+                        <option value="Habitação">Habitação</option>
+                        <option value="Saúde">Saúde</option>
+                        <option value="Educação">Educação</option>
+                        <option value="Lazer">Lazer</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+
+                    <button type="submit" id="btnGuardar">
+                        Adicionar despesa
+                    </button>
+
+                    <button type="button" id="btnCancelarEdicao"
+                            class="btn-secondary hidden">
+                        Cancelar edição
+                    </button>
+
+                </form>
+            </section>
+
+            <!-- LISTA E FILTRO -->
+            <section class="card">
+                <h2>As minhas despesas</h2>
+                
+                <div class="filtro">
+                    <label for="filtroCategoria">
+                        Filtrar por categoria
+                    </label>
+
+                    <select id="filtroCategoria">
+
+                        <option value="Todas">Todas as categorias</option>
+                        <option value="Alimentação">Alimentação</option>
+                        <option value="Transportes">Transportes</option>
+                        <option value="Habitação">Habitação</option>
+                        <option value="Saúde">Saúde</option>
+                        <option value="Educação">Educação</option>
+                        <option value="Lazer">Lazer</option>
+                        <option value="Outros">Outros</option>
+                                                
+                    </select>
+                    
+                </div>
+
+                <div class="tabela-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Valor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="listaDespesas">
+                            <!-- Despesas adicionadas pelo JavaScript -->
+                            
+                        </tbody>
+                        
+                    </table>
+                    <!-- Receber o total por categoria -->
+                    <br>
+                    <p id="totalCategoria"></p>
+                </div>
+
+                <p id="mensagemVazia">
+                    Ainda não existem despesas registadas.
+                </p>
+            </section>
+
+            <!-- API -->
+            <section class="card">
+                <h2>Informação meteorológica</h2>
+                <p>Dados obtidos através de uma API externa.</p>
+
+                <div id="dadosAPI">
+                    <p id="cidadeAPI">Cidade: --</p>
+                    <p id="temperaturaAPI">Temperatura: --</p>
+                    <p id="estadoAPI">Estado: --</p>
+                </div>
+
+                <button id="btnAtualizarAPI" type="button">
+                    Atualizar informação
+                </button>
+            </section>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Gestor de Despesas Pessoais | Projeto Final 2</p>
+    </footer>
+
+</body>
+</html>
