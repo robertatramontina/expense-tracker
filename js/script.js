@@ -121,20 +121,20 @@ function registrarDespesa() {
   let descricao = document.getElementById("descricao").value;
   let valor = parseFloat(document.getElementById("valor").value);
   let categoria = document.getElementById("categoria").value;
-  
-if (
-  descricao.trim() === "" ||
-  categoria.trim() === "" ||
-  isNaN(valor) ||
-  valor <= 0
-) {
-  alert("Despesa não pode ser registada. Verifique os campos!");
-  return false;
-} else {
-  listaDespesas.push({ descricao, valor, categoria });
-  guardarDespesas();
-  return true;
-}
+
+  if (
+    descricao.trim() === "" ||
+    categoria.trim() === "" ||
+    isNaN(valor) ||
+    valor <= 0
+  ) {
+    alert("Despesa não pode ser registada. Verifique os campos!");
+    return false;
+  } else {
+    listaDespesas.push({ descricao, valor, categoria });
+    guardarDespesas();
+    return true;
+  }
 }
 document
   .getElementById("formDespesa")
@@ -142,10 +142,10 @@ document
     event.preventDefault();
 
     if (registrarDespesa()) {
-    filtroCategoria();
-    document.getElementById("mensagemVazia").textContent = "";
-    this.reset();
-    calcularTotalDespesas();
+      filtroCategoria();
+      document.getElementById("mensagemVazia").textContent = "";
+      this.reset();
+      calcularTotalDespesas();
     }
   });
 
@@ -270,7 +270,7 @@ function calcularTotalDespesas() {
     total += despesa.valor;
   });
 
-  document.getElementById("totalDespesas").textContent = total.toFixed(2);
+  document.getElementById("totalDespesas").textContent = total.toFixed(2) + "€";
 }
 calcularTotalDespesas();
 
@@ -319,25 +319,86 @@ function mostrarTemperatura() {
       let latitude = posicao.coords.latitude;
       let longitude = posicao.coords.longitude;
 
-      let chaveAPI = CHAVE_API;
-
       fetch(
-        `https://api.weatherapi.com/v1/current.json?key=${chaveAPI}&q=${latitude},${longitude}&lang=pt`,
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code`,
       )
         .then((response) => response.json())
         .then((data) => {
-          let cidade = data.location.name;
-          let temperatura = data.current.temp_c;
-          let estado = data.current.condition.text;
+          let temperatura = data.current.temperature_2m;
+          let codigoEstado = data.current.weather_code;
+          let estado = "";
 
-          document.getElementById("cidadeAPI").textContent =
-            "Cidade: " + cidade;
+          switch (codigoEstado) {
+            case 0:
+              estado = "Céu limpo";
+              break;
+            case 1:
+              estado = "Predominantemente limpo";
+              break;
+            case 2:
+              estado = "Parcialmente nublado";
+              break;
+            case 3:
+              estado = "Céu nublado";
+              break;
+            case 45:
+            case 48:
+              estado = "Nevoeiro";
+              break;
+            case 51:
+            case 53:
+            case 55:
+              estado = "Chuvisco";
+              break;
+            case 61:
+            case 63:
+            case 65:
+              estado = "Chuva";
+              break;
+            case 71:
+            case 73:
+            case 75:
+              estado = "Neve";
+              break;
+            case 80:
+            case 81:
+            case 82:
+              estado = "Aguaceiros";
+              break;
+            case 95:
+            case 96:
+            case 99:
+              estado = "Trovoada";
+              break;
+            default:
+              estado = "Estado indisponível";
+          }
+
+          console.log("Temperatura:", temperatura);
+          console.log("Código do estado:", estado);
 
           document.getElementById("temperaturaAPI").textContent =
-            "Temperatura: " + temperatura + " °C";
+            "Temperatura: " + temperatura + "ºC";
 
           document.getElementById("estadoAPI").textContent =
             "Estado: " + estado;
+
+          fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=10`,
+          )
+            .then((resposta1) => resposta1.json())
+            .then((data) => {
+              let cidade =
+                data.address.city ||
+                data.address.town ||
+                data.address.village ||
+                data.address.municipality;
+
+              console.log(cidade);
+
+              document.getElementById("cidadeAPI").textContent =
+                "Cidade: " + cidade;
+            });
         })
         .catch((error) => {
           console.log("Erro na API:", error);
@@ -347,22 +408,6 @@ function mostrarTemperatura() {
       console.log("Erro na localização:", erro.message);
     },
   );
-}
-
-// executar ao abrir a página
-mostrarTemperatura();
-
-// atualizar ao clicar no botão
-document
-  .getElementById("btnAtualizarAPI")
-  .addEventListener("click", mostrarTemperatura);
-
-// Mostrar despesas guardadas ao abrir a página
-listarDespesas(listaDespesas);
-calcularTotalDespesas();
-
-if (listaDespesas.length > 0) {
-  document.getElementById("mensagemVazia").textContent = "";
 }
 
 //*******************************
