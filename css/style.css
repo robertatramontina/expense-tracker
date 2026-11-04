@@ -169,19 +169,19 @@ td button {
     margin: 3px;
 }
 
-.btn-editar {
+.btnEditar {
     background-color: #d99527;
 }
 
-.btn-editar:hover {
+.btnEditar:hover {
     background-color: #ad731b;
 }
 
-.btn-apagar {
+.btnExcluir {
     background-color: #c74444;
 }
 
-.btn-apagar:hover {
+.btnExcluir:hover {
     background-color: #9e2d2d;
 }
 
