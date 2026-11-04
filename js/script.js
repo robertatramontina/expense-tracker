@@ -33,6 +33,7 @@ if (modoGuardado === "dark") {
   document.getElementById("btnTema").textContent = "Modo escuro";
 }
 
+
 //*******************************
 //* funcao login
 //*******************************
@@ -78,6 +79,7 @@ if (myUserSaved) {
   document.getElementById("areaApp").classList.remove("hidden");
 }
 
+
 //*******************************
 // funcao mostrar data e hora
 //*******************************
@@ -107,6 +109,7 @@ function loggout() {
   document.getElementById("areaApp").classList.add("hidden");
 }
 document.getElementById("btnSair").addEventListener("click", loggout);
+
 
 //*******************************
 //* funcao registar despesa
@@ -148,6 +151,7 @@ document
       calcularTotalDespesas();
     }
   });
+
 
 //*******************************
 //* funcao listar despesas
@@ -202,6 +206,7 @@ function listarDespesas(parametroLista) {
   });
 }
 
+
 //*******************************
 // funcao editar despesa
 //*******************************
@@ -243,6 +248,7 @@ function editarDespesa(index) {
   filtroCategoria();
 }
 
+
 //*******************************
 // funcao excluir despesa
 //*******************************
@@ -260,6 +266,7 @@ function excluirDespesa(index) {
   }
 }
 
+
 //*******************************
 // funcao calcular total despesas
 //*******************************
@@ -273,6 +280,7 @@ function calcularTotalDespesas() {
   document.getElementById("totalDespesas").textContent = total.toFixed(2) + "€";
 }
 calcularTotalDespesas();
+
 
 //*****************************************
 // funcao filtrar despesas por categoria
@@ -308,6 +316,7 @@ function filtroCategoria() {
 document
   .getElementById("filtroCategoria")
   .addEventListener("change", filtroCategoria);
+
 
 //*******************************
 //* informação meteorológica
@@ -409,6 +418,12 @@ function mostrarTemperatura() {
     },
   );
 }
+// executar ao abrir a página
+mostrarTemperatura();
+
+// atualizar ao clicar no botão
+document.getElementById("btnAtualizarAPI").addEventListener("click", mostrarTemperatura);
+
 
 //*******************************
 //* guardar despesas do utilizador
