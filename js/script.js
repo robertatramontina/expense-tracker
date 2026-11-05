@@ -33,7 +33,6 @@ if (modoGuardado === "dark") {
   document.getElementById("btnTema").textContent = "Modo escuro";
 }
 
-
 //*******************************
 //* funcao login
 //*******************************
@@ -44,7 +43,7 @@ async function login() {
   // autenticar utilizador no Supabase
   const { data, error } = await supabaseClient.auth.signInWithPassword({
     email: myUser,
-    password: senha
+    password: senha,
   });
 
   if (error) {
@@ -64,7 +63,8 @@ async function login() {
   // login de facto
   localStorage.setItem("nomeUsuario", myUser);
 
-  document.getElementById("saudacao").textContent = "Olá, " + myUser + "!";
+  document.getElementById("saudacao").textContent =
+    "Olá, " + myUser.split("@")[0] + "!";
 
   document.getElementById("secaoLogin").classList.add("hidden");
 
@@ -85,7 +85,7 @@ document
   });
 
 //********************************
-//* funcao verificar sessao  
+//* funcao verificar sessao
 //* persistencia do utilizador
 //********************************
 async function verificarSessao() {
@@ -103,23 +103,14 @@ async function verificarSessao() {
   await carregarDespesas();
   filtroCategoria();
 
-  document.getElementById("saudacao").textContent = "Olá, " + myUserSaved + "!";
+  document.getElementById("saudacao").textContent =
+    "Olá, " + myUserSaved.split("@")[0] + "!";
 
   document.getElementById("secaoLogin").classList.add("hidden");
   document.getElementById("areaApp").classList.remove("hidden");
 }
 
 verificarSessao();
-
-
-//*******************************
-// funcao mostrar data e hora
-//*******************************
-function showDateAndTime() {
-  let agora = new Date();
-  document.getElementById("dataHora").textContent = agora.toLocaleString();
-}
-showDateAndTime();
 
 //*******************************
 // funcao loggout
@@ -143,17 +134,15 @@ async function loggout() {
   document.getElementById("mensagemVazia").textContent =
     "Nenhuma despesa registada.";
 
-  document.getElementById("formLogin").reset();  
+  document.getElementById("formLogin").reset();
   document.getElementById("secaoLogin").classList.remove("hidden");
   document.getElementById("areaApp").classList.add("hidden");
 }
 document.getElementById("btnSair").addEventListener("click", loggout);
 
-
-
- //*******************************
- //* funcao registar despesa
- //*******************************
+//*******************************
+//* funcao registar despesa
+//*******************************
 let usuarioAtual = null;
 let listaDespesas = [];
 
@@ -177,7 +166,7 @@ async function registrarDespesa() {
         user_id: usuarioAtual,
         descricao: descricao,
         valor: valor,
-        categoria: categoria
+        categoria: categoria,
       })
       .select();
 
@@ -204,8 +193,6 @@ document
     }
   });
 
-
-
 //*******************************
 //* funcao listar despesas
 //*******************************
@@ -213,7 +200,8 @@ function listarDespesas(parametroLista) {
   let listaHTML = document.getElementById("listaDespesas");
 
   listaHTML.innerHTML = "";
-
+  document.getElementById("mensagemVazia").textContent =
+    parametroLista.length === 0 ? "Nenhuma despesa encontrada." : "";
   parametroLista.forEach(function (despesa, index) {
     let indexOriginal = listaDespesas.indexOf(despesa);
 
@@ -226,7 +214,7 @@ function listarDespesas(parametroLista) {
     tdCategoria.textContent = despesa.categoria;
 
     let tdValor = document.createElement("td");
-    tdValor.textContent = despesa.valor;
+    tdValor.textContent = Number(despesa.valor).toFixed(2) + " €";
 
     let tdAcoes = document.createElement("td");
     tdAcoes.innerHTML = `
@@ -259,7 +247,6 @@ function listarDespesas(parametroLista) {
   });
 }
 
-
 //*******************************
 // funcao editar despesa
 //*******************************
@@ -275,52 +262,79 @@ async function editarDespesa(index) {
   if (resposta.toUpperCase() === "D") {
     let novaDescricao = prompt("Digite a nova descrição:");
 
-    if (novaDescricao !== null && novaDescricao.trim() !== "") {
+    if (novaDescricao === null) {
+      return;
+    }
+
+    if (novaDescricao.trim() !== "") {
       listaDespesas[index].descricao = novaDescricao;
+    } else {
+      alert("A descrição não pode estar vazia!");
+      return;
     }
   } else if (resposta.toUpperCase() === "C") {
-  let novaCategoria = prompt(
-    "Escolha a nova categoria:\n" +
-    "1 - Alimentação\n" +
-    "2 - Transportes\n" +
-    "3 - Habitação\n" +
-    "4 - Saúde\n" +
-    "5 - Educação\n" +
-    "6 - Lazer\n" +
-    "7 - Outros"
-  );
+    let novaCategoria = prompt(
+      "Escolha a nova categoria:\n" +
+        "1 - Alimentação\n" +
+        "2 - Transportes\n" +
+        "3 - Habitação\n" +
+        "4 - Saúde\n" +
+        "5 - Educação\n" +
+        "6 - Lazer\n" +
+        "7 - Outros",
+    );
 
-  let categorias = [
-    "Alimentação",
-    "Transportes",
-    "Habitação",
-    "Saúde",
-    "Educação",
-    "Lazer",
-    "Outros"
-  ];
+    let categorias = [
+      "Alimentação",
+      "Transportes",
+      "Habitação",
+      "Saúde",
+      "Educação",
+      "Lazer",
+      "Outros",
+    ];
 
-  if (novaCategoria !== null && novaCategoria >= 1 && novaCategoria <= 7) {
-    listaDespesas[index].categoria = categorias[novaCategoria - 1];
-  }
+    if (novaCategoria === null) {
+      return;
+    }
+
+    if (
+      novaCategoria >= 1 &&
+      novaCategoria <= 7 &&
+      Number.isInteger(Number(novaCategoria)) &&
+      novaCategoria.trim() !== ""
+    ) {
+      listaDespesas[index].categoria = categorias[novaCategoria - 1];
+    } else {
+      alert("Categoria inválida! Escolha um número de 1 a 7.");
+      return;
+    }
   } else if (resposta.toUpperCase() === "V") {
     let respostaValor = prompt("Digite o novo valor:");
 
     if (respostaValor !== null && respostaValor.trim() !== "") {
       let novoValor = Number(respostaValor.replace(",", "."));
 
-      if (Number.isFinite(novoValor) && novoValor >= 0) {
+      if (Number.isFinite(novoValor) && novoValor > 0) {
         listaDespesas[index].valor = novoValor;
+      } else {
+        alert("O valor da despesa deve ser superior a 0 €!");
+        return;
       }
+    } else {
+      return;
     }
+  } else {
+    alert("Opção inválida! Escolha apenas D, C ou V.");
+    return;
   }
 
-   const { error } = await supabaseClient
+  const { error } = await supabaseClient
     .from("despesas")
     .update({
       descricao: listaDespesas[index].descricao,
       categoria: listaDespesas[index].categoria,
-      valor: listaDespesas[index].valor
+      valor: listaDespesas[index].valor,
     })
     .eq("id", listaDespesas[index].id);
 
@@ -334,7 +348,6 @@ async function editarDespesa(index) {
   calcularTotalDespesas();
   filtroCategoria();
 }
-
 
 //*******************************
 // funcao excluir despesa
@@ -362,7 +375,6 @@ async function excluirDespesa(index) {
   }
 }
 
-
 //*******************************
 // funcao calcular total despesas
 //*******************************
@@ -373,10 +385,10 @@ function calcularTotalDespesas() {
     total += despesa.valor;
   });
 
-  document.getElementById("totalDespesas").textContent = total.toFixed(2) + "€";
+  document.getElementById("totalDespesas").textContent =
+    total.toFixed(2) + " €";
 }
 calcularTotalDespesas();
-
 
 //*****************************************
 // funcao filtrar despesas por categoria
@@ -413,6 +425,14 @@ document
   .getElementById("filtroCategoria")
   .addEventListener("change", filtroCategoria);
 
+//*******************************
+// funcao mostrar data e hora
+//*******************************
+function showDateAndTime() {
+  let agora = new Date();
+  document.getElementById("dataHora").textContent = agora.toLocaleString();
+}
+showDateAndTime();
 
 //*******************************
 //* informação meteorológica
@@ -518,8 +538,9 @@ function mostrarTemperatura() {
 mostrarTemperatura();
 
 // atualizar ao clicar no botão
-document.getElementById("btnAtualizarAPI").addEventListener("click", mostrarTemperatura);
-
+document
+  .getElementById("btnAtualizarAPI")
+  .addEventListener("click", mostrarTemperatura);
 
 //*******************************
 //* registar utilizador Supabase
@@ -530,7 +551,7 @@ async function registarUtilizador() {
 
   const { data, error } = await supabaseClient.auth.signUp({
     email: email,
-    password: senha
+    password: senha,
   });
 
   if (error) {
@@ -542,8 +563,9 @@ async function registarUtilizador() {
 }
 
 // escutar o botão de registo
-document.getElementById("btnRegistar").addEventListener("click", registarUtilizador);
-
+document
+  .getElementById("btnRegistar")
+  .addEventListener("click", registarUtilizador);
 
 //*******************************
 //* carregar despesas do Supabase
