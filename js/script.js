@@ -55,11 +55,8 @@ async function login() {
   // recuperar informacoes deixadas em login anterior
   usuarioAtual = data.user.id;
 
-  listaDespesas =
-    JSON.parse(localStorage.getItem("despesas_" + usuarioAtual)) || [];
-
+  await carregarDespesas();
   filtroCategoria();
-  calcularTotalDespesas();
 
   document.getElementById("mensagemVazia").textContent =
     listaDespesas.length === 0 ? "Nenhuma despesa registada." : "";
@@ -72,6 +69,7 @@ async function login() {
   document.getElementById("secaoLogin").classList.add("hidden");
 
   document.getElementById("areaApp").classList.remove("hidden");
+  return true;
 }
 // escutar o form
 document
@@ -86,11 +84,15 @@ document
     }
   });
 
-// persistencia do utilizador
+//********************************
+//* funcao verificar sessao  
+//* persistencia do utilizador
+//********************************
 async function verificarSessao() {
   const { data, error } = await supabaseClient.auth.getSession();
 
   if (error || !data.session) {
+    document.getElementById("secaoLogin").classList.remove("hidden");
     return;
   }
 
@@ -98,11 +100,8 @@ async function verificarSessao() {
 
   usuarioAtual = data.session.user.id;
 
-  listaDespesas =
-    JSON.parse(localStorage.getItem("despesas_" + usuarioAtual)) || [];
-
+  await carregarDespesas();
   filtroCategoria();
-  calcularTotalDespesas();
 
   document.getElementById("saudacao").textContent = "Olá, " + myUserSaved + "!";
 
@@ -143,7 +142,7 @@ async function loggout() {
 
   document.getElementById("mensagemVazia").textContent =
     "Nenhuma despesa registada.";
-    
+
   document.getElementById("formLogin").reset();  
   document.getElementById("secaoLogin").classList.remove("hidden");
   document.getElementById("areaApp").classList.add("hidden");
@@ -151,16 +150,17 @@ async function loggout() {
 document.getElementById("btnSair").addEventListener("click", loggout);
 
 
-//*******************************
-//* funcao registar despesa
-//*******************************
-let usuarioAtual = localStorage.getItem("nomeUsuario");
+
+ //*******************************
+ //* funcao registar despesa
+ //*******************************
+let usuarioAtual = null;
 
 let listaDespesas = usuarioAtual
   ? JSON.parse(localStorage.getItem("despesas_" + usuarioAtual)) || []
   : [];
 
-function registrarDespesa() {
+async function registrarDespesa() {
   let descricao = document.getElementById("descricao").value;
   let valor = parseFloat(document.getElementById("valor").value);
   let categoria = document.getElementById("categoria").value;
@@ -174,23 +174,38 @@ function registrarDespesa() {
     alert("Despesa não pode ser registada. Verifique os campos!");
     return false;
   } else {
+    const { data, error } = await supabaseClient
+      .from("despesas")
+      .insert({
+        user_id: usuarioAtual,
+        descricao: descricao,
+        valor: valor,
+        categoria: categoria
+      });
+
+    if (error) {
+      alert("Erro ao guardar despesa: " + error.message);
+      return false;
+    }
+
     listaDespesas.push({ descricao, valor, categoria });
-    guardarDespesas();
     return true;
   }
 }
+
 document
   .getElementById("formDespesa")
-  .addEventListener("submit", function (event) {
+  .addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    if (registrarDespesa()) {
+    if (await registrarDespesa()) {
       filtroCategoria();
       document.getElementById("mensagemVazia").textContent = "";
       this.reset();
       calcularTotalDespesas();
     }
   });
+
 
 
 //*******************************
@@ -250,7 +265,7 @@ function listarDespesas(parametroLista) {
 //*******************************
 // funcao editar despesa
 //*******************************
-function editarDespesa(index) {
+async function editarDespesa(index) {
   let resposta = prompt(
     "O que deseja editar? D - Descrição, C - Categoria, V - Valor ou ENTER para cancelar:",
   );
@@ -294,7 +309,7 @@ function editarDespesa(index) {
     let respostaValor = prompt("Digite o novo valor:");
 
     if (respostaValor !== null && respostaValor.trim() !== "") {
-      let novoValor = Number(respostaValor);
+      let novoValor = Number(respostaValor.replace(",", "."));
 
       if (Number.isFinite(novoValor) && novoValor >= 0) {
         listaDespesas[index].valor = novoValor;
@@ -302,7 +317,22 @@ function editarDespesa(index) {
     }
   }
 
-  guardarDespesas();
+   const { error } = await supabaseClient
+    .from("despesas")
+    .update({
+      descricao: listaDespesas[index].descricao,
+      categoria: listaDespesas[index].categoria,
+      valor: listaDespesas[index].valor
+    })
+    .eq("id", listaDespesas[index].id);
+
+  if (error) {
+    alert("Erro ao atualizar despesa: " + error.message);
+    await carregarDespesas();
+    filtroCategoria();
+    return;
+  }
+
   calcularTotalDespesas();
   filtroCategoria();
 }
@@ -311,15 +341,24 @@ function editarDespesa(index) {
 //*******************************
 // funcao excluir despesa
 //*******************************
-function excluirDespesa(index) {
+async function excluirDespesa(index) {
   let resposta = prompt(
-    "Tem certeza de que deseja excluir esta despesa? Digite 'SIM' para confirmar",
+    "Tem certeza de que deseja excluir esta despesa? Digite 'SIM' para confirmar.",
   );
 
   if (resposta !== null && resposta.toUpperCase() === "SIM") {
+    const { error } = await supabaseClient
+      .from("despesas")
+      .delete()
+      .eq("id", listaDespesas[index].id);
+
+    if (error) {
+      alert("Erro ao excluir despesa: " + error.message);
+      return;
+    }
+
     listaDespesas.splice(index, 1);
 
-    guardarDespesas();
     filtroCategoria();
     calcularTotalDespesas();
   }
@@ -516,3 +555,24 @@ async function registarUtilizador() {
 
 // escutar o botão de registo
 document.getElementById("btnRegistar").addEventListener("click", registarUtilizador);
+
+
+//*******************************
+//* carregar despesas do Supabase
+//*******************************
+async function carregarDespesas() {
+  const { data, error } = await supabaseClient
+    .from("despesas")
+    .select("*")
+    .order("id", { ascending: true });
+
+  if (error) {
+    alert("Erro ao carregar despesas: " + error.message);
+    return;
+  }
+
+  listaDespesas = data;
+
+  listarDespesas(listaDespesas);
+  calcularTotalDespesas();
+}
