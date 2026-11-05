@@ -37,11 +37,23 @@ if (modoGuardado === "dark") {
 //*******************************
 //* funcao login
 //*******************************
-function login() {
+async function login() {
   let myUser = document.getElementById("nomeUsuario").value;
+  let senha = document.getElementById("senha").value;
+
+  // autenticar utilizador no Supabase
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: myUser,
+    password: senha
+  });
+
+  if (error) {
+    alert("Email ou palavra-passe incorretos!");
+    return false;
+  }
 
   // recuperar informacoes deixadas em login anterior
-  usuarioAtual = myUser;
+  usuarioAtual = data.user.id;
 
   listaDespesas =
     JSON.parse(localStorage.getItem("despesas_" + usuarioAtual)) || [];
@@ -64,20 +76,41 @@ function login() {
 // escutar o form
 document
   .getElementById("formLogin")
-  .addEventListener("submit", function (event) {
+  .addEventListener("submit", async function (event) {
     event.preventDefault();
-    login();
-    this.reset();
-  });
-// persistencia do utilizador
-let myUserSaved = localStorage.getItem("nomeUsuario");
 
-if (myUserSaved) {
+    let resultado = await login();
+
+    if (resultado) {
+      this.reset();
+    }
+  });
+
+// persistencia do utilizador
+async function verificarSessao() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error || !data.session) {
+    return;
+  }
+
+  let myUserSaved = data.session.user.email;
+
+  usuarioAtual = data.session.user.id;
+
+  listaDespesas =
+    JSON.parse(localStorage.getItem("despesas_" + usuarioAtual)) || [];
+
+  filtroCategoria();
+  calcularTotalDespesas();
+
   document.getElementById("saudacao").textContent = "Olá, " + myUserSaved + "!";
 
   document.getElementById("secaoLogin").classList.add("hidden");
   document.getElementById("areaApp").classList.remove("hidden");
 }
+
+verificarSessao();
 
 
 //*******************************
@@ -92,7 +125,13 @@ showDateAndTime();
 //*******************************
 // funcao loggout
 //*******************************
-function loggout() {
+async function loggout() {
+  const { error } = await supabaseClient.auth.signOut();
+
+  if (error) {
+    alert("Erro ao terminar sessão: " + error.message);
+    return;
+  }
   localStorage.removeItem("nomeUsuario");
 
   usuarioAtual = null;
@@ -104,7 +143,8 @@ function loggout() {
 
   document.getElementById("mensagemVazia").textContent =
     "Nenhuma despesa registada.";
-
+    
+  document.getElementById("formLogin").reset();  
   document.getElementById("secaoLogin").classList.remove("hidden");
   document.getElementById("areaApp").classList.add("hidden");
 }
@@ -453,3 +493,26 @@ function guardarDespesas() {
     JSON.stringify(listaDespesas),
   );
 }
+
+//*******************************
+//* registar utilizador Supabase
+//*******************************
+async function registarUtilizador() {
+  let email = document.getElementById("nomeUsuario").value;
+  let senha = document.getElementById("senha").value;
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email: email,
+    password: senha
+  });
+
+  if (error) {
+    alert("Erro no registo: " + error.message);
+  } else {
+    alert("Utilizador registado com sucesso!");
+    document.getElementById("formLogin").reset();
+  }
+}
+
+// escutar o botão de registo
+document.getElementById("btnRegistar").addEventListener("click", registarUtilizador);

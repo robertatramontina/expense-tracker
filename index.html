@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de Despesas Pessoais</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+    <script src="js/supabase-config.js" defer></script>
     <script src="js/script.js" defer></script>
 </head>
 <body class="light">
@@ -24,10 +26,10 @@
             <h2>Iniciar sessão</h2>
 
             <form id="formLogin">
-                <label for="nomeUsuario">Nome de utilizador</label>
-                <input type="text" id="nomeUsuario"
+                <label for="nomeUsuario">E-mail</label>
+                <input type="email" id="nomeUsuario"
                        name="nomeUsuario"
-                       placeholder="Introduza o seu nome"
+                       placeholder="Introduza o seu email"
                        required>
 
                 <label for="senha">Palavra-passe</label>
@@ -37,6 +39,7 @@
                        required>
 
                 <button type="submit">Entrar</button>
+                <button type="button" id="btnRegistar">Criar conta</button>
             </form>
         </section>
 
