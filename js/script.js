@@ -155,10 +155,7 @@ document.getElementById("btnSair").addEventListener("click", loggout);
  //* funcao registar despesa
  //*******************************
 let usuarioAtual = null;
-
-let listaDespesas = usuarioAtual
-  ? JSON.parse(localStorage.getItem("despesas_" + usuarioAtual)) || []
-  : [];
+let listaDespesas = [];
 
 async function registrarDespesa() {
   let descricao = document.getElementById("descricao").value;
@@ -181,14 +178,15 @@ async function registrarDespesa() {
         descricao: descricao,
         valor: valor,
         categoria: categoria
-      });
+      })
+      .select();
 
     if (error) {
       alert("Erro ao guardar despesa: " + error.message);
       return false;
     }
 
-    listaDespesas.push({ descricao, valor, categoria });
+    listaDespesas.push(data[0]);
     return true;
   }
 }
@@ -522,16 +520,6 @@ mostrarTemperatura();
 // atualizar ao clicar no botão
 document.getElementById("btnAtualizarAPI").addEventListener("click", mostrarTemperatura);
 
-
-//*******************************
-//* guardar despesas do utilizador
-//*******************************
-function guardarDespesas() {
-  localStorage.setItem(
-    "despesas_" + usuarioAtual,
-    JSON.stringify(listaDespesas),
-  );
-}
 
 //*******************************
 //* registar utilizador Supabase
