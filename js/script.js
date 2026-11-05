@@ -226,11 +226,30 @@ function editarDespesa(index) {
       listaDespesas[index].descricao = novaDescricao;
     }
   } else if (resposta.toUpperCase() === "C") {
-    let novaCategoria = prompt("Digite a nova categoria:");
+  let novaCategoria = prompt(
+    "Escolha a nova categoria:\n" +
+    "1 - Alimentação\n" +
+    "2 - Transportes\n" +
+    "3 - Habitação\n" +
+    "4 - Saúde\n" +
+    "5 - Educação\n" +
+    "6 - Lazer\n" +
+    "7 - Outros"
+  );
 
-    if (novaCategoria !== null && novaCategoria.trim() !== "") {
-      listaDespesas[index].categoria = novaCategoria;
-    }
+  let categorias = [
+    "Alimentação",
+    "Transportes",
+    "Habitação",
+    "Saúde",
+    "Educação",
+    "Lazer",
+    "Outros"
+  ];
+
+  if (novaCategoria !== null && novaCategoria >= 1 && novaCategoria <= 7) {
+    listaDespesas[index].categoria = categorias[novaCategoria - 1];
+  }
   } else if (resposta.toUpperCase() === "V") {
     let respostaValor = prompt("Digite o novo valor:");
 
